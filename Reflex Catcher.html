@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reflex Catcher</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+
+:root {
+    --bg: #f1f4fc;
+    --card: #ffffff;
+    --text: #252d49;
+    --muted: #8992aa;
+    --primary: #6258e8;
+    --primary-light: #efedff;
+    --green: #18a875;
+    --red: #e45b6b;
+    --border: #e7eaf3;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+    padding: 22px 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+}
+
+.app {
+    width: 100%;
+    max-width: 600px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 21px;
+}
+
+.logo {
+    width: 58px;
+    height: 58px;
+    display: grid;
+    place-items: center;
+    margin: 0 auto 10px;
+    background: var(--primary);
+    color: white;
+    border-radius: 18px;
+    font-size: 30px;
+    box-shadow: 0 7px 18px #6258e833;
+}
+
+h1 {
+    font-size: 29px;
+    font-weight: 900;
+    letter-spacing: -.8px;
+}
+
+.subtitle {
+    color: var(--muted);
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+.panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 23px;
+    padding: 21px;
+    box-shadow: 0 12px 35px #26365c0b;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 17px;
+}
+
+.stat {
+    background: #f7f8fd;
+    border-radius: 13px;
+    padding: 11px 5px;
+    text-align: center;
+}
+
+.stat span {
+    display: block;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: .7px;
+}
+
+.stat strong {
+    display: block;
+    font-size: 23px;
+    font-weight: 900;
+    margin-top: 3px;
+}
+
+.score-value {
+    color: var(--primary);
+}
+
+.timer-value {
+    color: var(--green);
+}
+
+.progress-track {
+    height: 8px;
+    background: #eceefa;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 17px;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, #6258e8, #a18bff);
+    border-radius: 20px;
+    transition: width .2s linear;
+}
+
+.arena-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 11px;
+}
+
+.arena-heading h2 {
+    font-size: 16px;
+    font-weight: 900;
+}
+
+.level-badge {
+    padding: 5px 11px;
+    border-radius: 20px;
+    background: var(--primary-light);
+    color: var(--primary);
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.arena {
+    position: relative;
+    height: 340px;
+    overflow: hidden;
+    border-radius: 16px;
+    border: 1px solid #e3e7f2;
+    background-color: #f8f9ff;
+    background-image: radial-gradient(#dfe3f1 1px, transparent 1px);
+    background-size: 19px 19px;
+    touch-action: manipulation;
+}
+
+.arena::before {
+    content: "CATCH THE OBJECT!";
+    position: absolute;
+    top: 13px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: #b2b8cc;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    pointer-events: none;
+}
+
+.target {
+    position: absolute;
+    width: 53px;
+    height: 53px;
+    border: none;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 27px;
+    cursor: pointer;
+    background: white;
+    box-shadow: 0 5px 15px #6258e833, inset 0 0 0 3px #ffffff;
+    transform: translate(-50%, -50%);
+    animation: appear .2s ease-out;
+    z-index: 2;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.target:active {
+    transform: translate(-50%, -50%) scale(.8);
+}
+
+@keyframes appear {
+    from { opacity: 0; scale: .5; }
+    to { opacity: 1; scale: 1; }
+}
+
+.target.missed {
+    opacity: .2;
+}
+
+.arena-message {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+    pointer-events: none;
+    z-index: 1;
+    padding: 20px;
+}
+
+.arena-message .big {
+    font-size: 48px;
+    margin-bottom: 8px;
+}
+
+.arena-message strong {
+    font-size: 17px;
+    font-weight: 900;
+}
+
+.arena-message span {
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.arena-message.hidden {
+    display: none;
+}
+
+.feedback {
+    min-height: 25px;
+    text-align: center;
+    margin-top: 12px;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.feedback.good {
+    color: var(--green);
+}
+
+.feedback.bad {
+    color: var(--red);
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 13px;
+}
+
+.btn {
+    border: none;
+    border-radius: 12px;
+    padding: 13px 17px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: .15s;
+}
+
+.btn:active {
+    transform: scale(.97);
+}
+
+.primary {
+    background: var(--primary);
+    color: white;
+    flex: 1;
+}
+
+.secondary {
+    background: var(--primary-light);
+    color: var(--primary);
+}
+
+.btn:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+.instructions {
+    background: #f7f8fd;
+    border-radius: 13px;
+    padding: 13px;
+    margin-top: 16px;
+    color: #727c96;
+    font-size: 12px;
+    line-height: 1.6;
+    text-align: center;
+}
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background: #17203b99;
+    backdrop-filter: blur(5px);
+}
+
+.overlay.show {
+    display: flex;
+}
+
+.modal {
+    width: 100%;
+    max-width: 390px;
+    background: white;
+    border-radius: 23px;
+    padding: 27px 23px;
+    text-align: center;
+    box-shadow: 0 20px 60px #0002;
+}
+
+.modal-icon {
+    font-size: 55px;
+    margin-bottom: 10px;
+}
+
+.modal h2 {
+    font-size: 25px;
+    font-weight: 900;
+}
+
+.modal p {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.6;
+    margin-top: 7px;
+}
+
+.final-score {
+    color: var(--primary);
+    font-size: 58px;
+    font-weight: 900;
+    margin: 13px 0 0;
+}
+
+.score-label {
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.result-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.result-stat {
+    background: #f7f8fd;
+    padding: 12px;
+    border-radius: 13px;
+}
+
+.result-stat strong {
+    display: block;
+    font-size: 21px;
+}
+
+.result-stat span {
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.modal .btn {
+    width: 100%;
+    margin-top: 9px;
+    padding: 14px;
+}
+
+footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    padding: 15px 0 2px;
+}
+
+@media (max-width: 430px) {
+    .panel {
+        padding: 14px;
+    }
+
+    .arena {
+        height: 310px;
+    }
+
+    .target {
+        width: 49px;
+        height: 49px;
+        font-size: 25px;
+    }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+    <header>
+        <div class="logo">🎯</div>
+        <h1>Reflex Catcher</h1>
+    </header>
+
+    <main class="panel">
+        <div class="stats">
+            <div class="stat">
+                <span>Score</span>
+                <strong class="score-value" id="score">0</strong>
+            </div>
+            <div class="stat">
+                <span>Time</span>
+                <strong class="timer-value" id="timer">30</strong>
+            </div>
+            <div class="stat">
+                <span>Missed</span>
+                <strong id="missed">0</strong>
+            </div>
+        </div>
+
+        <div class="progress-track">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <div class="arena-heading">
+            <h2>⚡ Catching Zone</h2>
+            <span class="level-badge" id="level">LEVEL 1</span>
+        </div>
+
+        <div class="arena" id="arena">
+            <div class="arena-message" id="arenaMessage">
+                <div class="big">🎯</div>
+                <strong>Ready for the challenge?</strong>
+                <span>Click Start Game to begin catching!</span>
+            </div>
+        </div>
+
+        <div class="feedback" id="feedback" aria-live="polite">Your reflex challenge awaits!</div>
+
+        <div class="controls">
+            <button class="btn primary" id="startBtn">▶ Start Game</button>
+            <button class="btn secondary" id="resetBtn">↻ Reset</button>
+        </div>
+
+        <div class="instructions">
+            👆 Click or tap the falling object before it reaches the bottom. Each successful catch earns 10 points. Objects get faster as your score increases!
+        </div>
+    </main>
+
+</div>
+
+<div class="overlay" id="overlay">
+    <div class="modal">
+        <div class="modal-icon" id="resultIcon">🏆</div>
+        <h2 id="resultTitle">Game Over!</h2>
+        <p id="resultMessage">Great effort! Here's your reflex performance.</p>
+
+        <div class="final-score" id="finalScore">0</div>
+        <div class="score-label">Final Score</div>
+
+        <div class="result-stats">
+            <div class="result-stat">
+                <strong id="finalCaught">0</strong>
+                <span>Objects Caught</span>
+            </div>
+            <div class="result-stat">
+                <strong id="finalMissed">0</strong>
+                <span>Objects Missed</span>
+            </div>
+        </div>
+
+        <button class="btn primary" id="shareBtn">↗ Share My Score</button>
+        <button class="btn secondary" id="playAgainBtn">Play Again ↻</button>
+    </div>
+</div>
+
+<script>
+const arena = document.getElementById("arena");
+const arenaMessage = document.getElementById("arenaMessage");
+const scoreDisplay = document.getElementById("score");
+const timerDisplay = document.getElementById("timer");
+const missedDisplay = document.getElementById("missed");
+const feedback = document.getElementById("feedback");
+const progressBar = document.getElementById("progressBar");
+const levelDisplay = document.getElementById("level");
+const overlay = document.getElementById("overlay");
+
+const GAME_DURATION = 30;
+const OBJECTS = ["⭐", "🍎", "💎", "⚡", "🍀", "🎈", "🪙"];
+
+let score = 0;
+let caught = 0;
+let missed = 0;
+let timeLeft = GAME_DURATION;
+let gameActive = false;
+let spawnTimeout = null;
+let timerInterval = null;
+let currentTarget = null;
+let targetStart = 0;
+let targetDuration = 1800;
+let animationFrame = null;
+let bestScore = 0;
+
+function updateStats() {
+    scoreDisplay.textContent = score;
+    missedDisplay.textContent = missed;
+
+    const level = Math.min(10, Math.floor(score / 50) + 1);
+    levelDisplay.textContent = `LEVEL ${level}`;
+}
+
+function getTargetDuration() {
+    return Math.max(550, 1800 - Math.floor(score / 10) * 45);
+}
+
+function random(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function spawnTarget() {
+    if (!gameActive) return;
+
+    removeTarget();
+
+    const target = document.createElement("button");
+    target.className = "target";
+    target.type = "button";
+    target.textContent = OBJECTS[random(0, OBJECTS.length - 1)];
+    target.setAttribute("aria-label", "Catch falling object");
+
+    const width = arena.clientWidth;
+    const height = arena.clientHeight;
+    const radius = 30;
+
+    const x = random(radius + 5, Math.max(radius + 5, width - radius - 5));
+    const y = 48;
+
+    target.style.left = `${x}px`;
+    target.style.top = `${y}px`;
+
+    arena.appendChild(target);
+
+    currentTarget = target;
+    targetStart = performance.now();
+    targetDuration = getTargetDuration();
+
+    target.addEventListener("click", catchTarget);
+
+    animateTarget();
+}
+
+function animateTarget() {
+    if (!gameActive || !currentTarget) return;
+
+    const elapsed = performance.now() - targetStart;
+    const progress = Math.min(1, elapsed / targetDuration);
+
+    const startY = 48;
+    const endY = arena.clientHeight - 35;
+    const currentY = startY + (endY - startY) * progress;
+
+    currentTarget.style.top = `${currentY}px`;
+
+    if (progress >= 1) {
+        missTarget();
+        return;
+    }
+
+    animationFrame = requestAnimationFrame(animateTarget);
+}
+
+function catchTarget(event) {
+    if (!gameActive || event.currentTarget !== currentTarget) return;
+
+    cancelAnimationFrame(animationFrame);
+    currentTarget.removeEventListener("click", catchTarget);
+    currentTarget.remove();
+
+    currentTarget = null;
+    caught++;
+    score += 10;
+
+    updateStats();
+
+    feedback.textContent = "✓ Nice catch! +10 points";
+    feedback.className = "feedback good";
+
+    scheduleNextTarget(220);
+}
+
+function missTarget() {
+    if (!currentTarget) return;
+
+    cancelAnimationFrame(animationFrame);
+    currentTarget.classList.add("missed");
+    currentTarget.removeEventListener("click", catchTarget);
+    currentTarget.remove();
+    currentTarget = null;
+
+    missed++;
+    updateStats();
+
+    feedback.textContent = "✗ Missed! Stay alert for the next one.";
+    feedback.className = "feedback bad";
+
+    scheduleNextTarget(350);
+}
+
+function removeTarget() {
+    cancelAnimationFrame(animationFrame);
+
+    if (currentTarget) {
+        currentTarget.removeEventListener("click", catchTarget);
+        currentTarget.remove();
+        currentTarget = null;
+    }
+}
+
+function scheduleNextTarget(delay) {
+    clearTimeout(spawnTimeout);
+
+    if (gameActive) {
+        spawnTimeout = setTimeout(spawnTarget, delay);
+    }
+}
+
+function updateTimer() {
+    timerDisplay.textContent = timeLeft;
+    progressBar.style.width = `${(timeLeft / GAME_DURATION) * 100}%`;
+
+    if (timeLeft <= 10) {
+        timerDisplay.style.color = "#e45b6b";
+        progressBar.style.background = "#e45b6b";
+    } else {
+        timerDisplay.style.color = "#18a875";
+        progressBar.style.background = "linear-gradient(90deg, #6258e8, #a18bff)";
+    }
+}
+
+function startGame() {
+    clearInterval(timerInterval);
+    clearTimeout(spawnTimeout);
+    removeTarget();
+
+    score = 0;
+    caught = 0;
+    missed = 0;
+    timeLeft = GAME_DURATION;
+    gameActive = true;
+
+    updateStats();
+    updateTimer();
+
+    overlay.classList.remove("show");
+    arenaMessage.classList.add("hidden");
+
+    feedback.textContent = "Go! Catch as many as you can!";
+    feedback.className = "feedback good";
+
+    document.getElementById("startBtn").textContent = "▶ Game Running";
+    document.getElementById("startBtn").disabled = true;
+
+    spawnTarget();
+
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        updateTimer();
+
+        if (timeLeft <= 0) {
+            finishGame();
+        }
+    }, 1000);
+}
+
+function finishGame() {
+    if (!gameActive) return;
+
+    gameActive = false;
+    clearInterval(timerInterval);
+    clearTimeout(spawnTimeout);
+    removeTarget();
+
+    bestScore = Math.max(bestScore, score);
+
+    document.getElementById("finalScore").textContent = score;
+    document.getElementById("finalCaught").textContent = caught;
+    document.getElementById("finalMissed").textContent = missed;
+
+    let icon = "💪";
+    let title = "Time's Up!";
+    let message = "Good effort! Keep practising to improve your reflexes.";
+
+    if (score >= 200) {
+        icon = "🏆";
+        title = "Reflex Master!";
+        message = "Incredible speed! Your reactions are lightning fast.";
+    } else if (score >= 100) {
+        icon = "🌟";
+        title = "Great Reflexes!";
+        message = "Fantastic performance! Can you go even faster?";
+    } else if (score >= 50) {
+        icon = "👏";
+        title = "Nice Work!";
+        message = "You're getting quicker. Try another round!";
+    }
+
+    document.getElementById("resultIcon").textContent = icon;
+    document.getElementById("resultTitle").textContent = title;
+    document.getElementById("resultMessage").textContent = message;
+
+    document.getElementById("startBtn").textContent = "▶ Play Again";
+    document.getElementById("startBtn").disabled = false;
+
+    overlay.classList.add("show");
+}
+
+async function shareScore() {
+    const text = `🎯 I scored ${score} points in Reflex Catcher!\n\n⭐ Objects caught: ${caught}\n❌ Objects missed: ${missed}\n\nCan you beat my reflex score?`;
+
+    if (navigator.share) {
+        try {
+            await navigator.share({
+                title: "My Reflex Catcher Score",
+                text: text
+            });
+        } catch (error) {
+            if (error.name !== "AbortError") {
+                copyScore(text);
+            }
+        }
+    } else {
+        copyScore(text);
+    }
+}
+
+async function copyScore(text) {
+    try {
+        await navigator.clipboard.writeText(text);
+        const button = document.getElementById("shareBtn");
+        button.textContent = "✓ Score Copied!";
+        setTimeout(() => button.textContent = "↗ Share My Score", 2000);
+    } catch {
+        window.prompt("Copy your score:", text);
+    }
+}
+
+document.getElementById("startBtn").addEventListener("click", startGame);
+document.getElementById("resetBtn").addEventListener("click", () => {
+    clearInterval(timerInterval);
+    clearTimeout(spawnTimeout);
+    removeTarget();
+
+    gameActive = false;
+    score = 0;
+    caught = 0;
+    missed = 0;
+    timeLeft = GAME_DURATION;
+
+    updateStats();
+    updateTimer();
+
+    overlay.classList.remove("show");
+    arenaMessage.classList.remove("hidden");
+
+    document.getElementById("startBtn").textContent = "▶ Start Game";
+    document.getElementById("startBtn").disabled = false;
+
+    feedback.textContent = "Your reflex challenge awaits!";
+    feedback.className = "feedback";
+});
+
+document.getElementById("playAgainBtn").addEventListener("click", startGame);
+document.getElementById("shareBtn").addEventListener("click", shareScore);
+
+updateStats();
+updateTimer();
+</script>
+
+</body>
+</html>
